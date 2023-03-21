@@ -27,7 +27,7 @@ LABEL_H = 12
 # # # 1. Extract the Cxxx part numbers from CSV files (BOM-Export on LCSC)
 
 # Example CSV File
-CSV_File = 'LCSC_Exported__20230319_213610.csv'
+CSV_File = 'example.csv'
 
 listOfParts = []
 
