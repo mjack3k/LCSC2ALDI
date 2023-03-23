@@ -12,6 +12,7 @@
 # Imports
 import math
 import argparse
+import subprocess
 import requests
 
 
@@ -149,26 +150,75 @@ def GetTableSize(listOfParts):
 
 # 3.4 Compile to PDF
 
-def CreatePDF(listOfParts):
+def CreatePDF(parts):
     #print(listOfParts)
-    nCols, nRows = GetTableSize(listOfParts)
+    nCols, nRows = GetTableSize(parts)
     #print(nCols)
     #print(nRows)
     
     TEXFILE="LCSC_Labels.tex"
     
-    with open(TEXTFILE, "w") as file:
-        pass
+    with open(TEXFILE, "w") as file:
+        # Write header
+        file.write("\\documentclass{article}\n")
+        file.write("\\usepackage{graphicx} % Required for inserting images\n")
+        file.write("\\usepackage[thinlines]{easytable}\n")
+        file.write("\\usepackage[margin=2cm]{geometry}\n")
+        file.write("\\usepackage{longtable}\n")
+        file.write('\\title{LCSC2ALDI}\n')
+        file.write("\\author{mjack3k}\n")
+        file.write("\\date{March 2023}\n")
+        file.write("\\begin{document}\n")
+        file.write("\\maketitle\n")
 
-    
+        # Put the table HERE!
+        file.write("\\begin{longtable}{") # begin table
+        for x in range(nCols):
+            file.write("|p{20mm}p{43mm}")   # define columns
+        file.write("|}\n")
+
+        file.write("\\hline\n")
+
+        for x in range(nRows):
+            file.write("\\break \\includegraphics[width=10mm]{icons/led.png} & \\break C9999 \\break LED 1206 Emerald & derp & 2\\\\[12mm]")
+            file.write("\n")
+            file.write("\\hline\n")
+
+        file.write("\\end{longtable}")    # end table
+
+        # End TEX document
+        file.write("\\end{document}\n")
+
+
+
+
+
+
+#     \break \includegraphics[width=10mm]{led.png} & \break 1206 EMERALD  & \break \includegraphics[width=10mm]{resistor.png} & \break R 10K 0603 1\% \\[12mm]
+#     \hline
+#     SYMBOL & R 10K 0603 1\% & SYMBOL & R 10K 0603 1\% \\[12mm]
+#     \hline
+#     SYMBOL & R 10K 0603 1\% & SYMBOL & R 10K 0603 1\% \\[12mm]
+#     \hline
+#
+
+
+
+
+
+
+
+    subprocess.run(["pdflatex", TEXFILE])
+
 
 
 
 # The actual main() function
 def main():
     csvFiles = ParseArgs()
-    listOfParts = GetCNumberssFromCSV(csvFiles)
-    labels = GetPartsStrings(listOfParts)
+    #listOfParts = GetCNumberssFromCSV(csvFiles)
+    #labels = GetPartsStrings(listOfParts)
+    labels = []
     CreatePDF(labels)
 
 if __name__ == "__main__":
