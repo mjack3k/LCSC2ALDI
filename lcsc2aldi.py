@@ -5,7 +5,17 @@
 # It takes your exported BOM (CSV files) from LCSC.com, collects information about the parts
 # and puts it into document in form of a table - to be cut and glued on the containers
 
-# Definitions
+# Install https://miktex.org/, then latexmk in Packages inside miktex MikTeX console
+# Install Perl (Windows: https://strawberryperl.com/ Linux: Your distro probly already provided perl for you)
+# Install python modules: argparse, pylatex, pdflatex
+
+# Imports
+import math
+import argparse
+import requests
+
+
+# Definitions and variables
 
 # Sheet format
 # currently only A4 is supported
@@ -20,31 +30,88 @@ LABEL_H = 12
 
 
 
+
+
+
 # # # 0. Parse arguments - use argparse module for that
 
-#parser.add_argument('file', type=argparse.FileType('r'), nargs='+')
+# Get list of csv_files
+def ParseArgs():
+    parser = argparse.ArgumentParser(description='Create labels for your LCSC parts')
+    parser.add_argument('csv_file', type=str, nargs='+')
+    args = parser.parse_args()
+
+    return args.csv_file
+
+
 
 # # # 1. Extract the Cxxx part numbers from CSV files (BOM-Export on LCSC)
 
-# Example CSV File
-CSV_File = 'example.csv'
+def GetCNumberssFromCSV(fileList):
+    cList = []
 
-listOfParts = []
-
-with open(CSV_File, "r", encoding="utf-8") as file:
-    for line in file:
-        part = line.split(',')[0]
+    for f in fileList:
+        with open(f, "r", encoding="utf-8") as file:
+            for line in file:
+                part = line.split(',')[0]
         
-        if part.lower().startswith('c'):
-            listOfParts.append(part)
-        
-    #print(lines.encode('cp1250', errors="replace"))
-    #print(file.read().encode('cp1250', errors="replace"))
+                if part.lower().startswith('c'):
+                    cList.append(part)
+    
+    cList = list(dict.fromkeys(cList))  # remove duplicates
+    return cList
 
-print(listOfParts)
 
 # # # 2. Iterate over the listOfParts, Get data from LCSC.com and gather info to the database (Part type, values etc)
 #       this step is pretty complex and it might take some time until we get it right
+
+
+def GetPartsStrings(listOfParts):
+    labels = []
+    
+    knownCategories=['Capacitors', 'Resistors']
+    
+    
+    for part in listOfParts:
+        # Get category
+        categories = []
+        website = requests.get('https://www.lcsc.com/product-detail/' + part + ".html")
+
+        i = -1
+        try:
+            while website.text.index('v-breadcrumbs__item', i+1):
+                # get "breadcrumbs":
+                i = website.text.index('v-breadcrumbs__item', i+1)
+                #print(website.text[i2:].encode("utf-8"))
+                breadcrumb = website.text[i:].partition('>')[2].partition('<')[0].encode("utf-8")
+                #print(breadcrumb)
+                categories.append(breadcrumb)
+        except:
+            #print("No more categories")
+            pass
+            
+        # Get package
+        i = website.text.index('>Package<', 0)
+        i = website.text.index('<td', i)
+        package = website.text[i+9:].partition('>')[2].partition('<')[0].encode("utf-8")
+        #print(package)
+        
+        # Value ?
+        i = website.text.index('"description":"', 0)
+        #i = website.text.index('', i)
+        value = website.text[i+15:].partition('"')[0].replace("ROHS","").split(" ")
+        value = ' '.join(value[:4])
+        
+        if str(categories[2].decode("utf-8")) in knownCategories:
+            #print((part + " " + str(categories[2]) + " " + str(package) + " " + str(value)).encode("utf-8"), flush=True)
+            labels.append((part.encode("utf-8"), str(categories[2]).encode("utf-8"), str(package).encode("utf-8"), str(value).encode("utf-8")))
+        else:
+            #print(categories[2])
+            #print((part + " " + str(categories[-1]).split(' ')[-1] + " " + str(package) + " " + str(value)).encode("utf-8"), flush=True)
+            labels.append((part.encode("utf-8"), str(categories[-1]).split(' ')[-1].encode("utf-8"), str(package).encode("utf-8"), str(value).encode("utf-8")))
+        
+    print(len(labels))
+    return labels
 
 # 2.1 Create templates for various part types - resistors, capacitors, diodes, LEDs, microcontrollers, various ICs, connectors etc
 #       Not all parts on LCSC are properly defined - very often values are missing and you need to extract them from datasheet
@@ -62,3 +129,47 @@ print(listOfParts)
 #       
 
 # # # 3. Create a PDF document with labels.
+
+# 3.1 Check how many cells can fit on one page & how many pages we need
+
+def GetTableSize(listOfParts):
+    nCols = math.floor(PAPER_W/LABEL_W)
+    nRows = math.floor(PAPER_H/LABEL_H)
+
+    # Cells per sheet
+    nCells = nCols*nRows
+
+    nPages = math.ceil(len(listOfParts) / nCells)
+    
+    return nCols, nRows
+
+# 3.2 Create basic Latex document structure
+
+# 3.3 Create table and fill cells with informations about the parts
+
+# 3.4 Compile to PDF
+
+def CreatePDF(listOfParts):
+    #print(listOfParts)
+    nCols, nRows = GetTableSize(listOfParts)
+    #print(nCols)
+    #print(nRows)
+    
+    TEXFILE="LCSC_Labels.tex"
+    
+    with open(TEXTFILE, "w") as file:
+        pass
+
+    
+
+
+
+# The actual main() function
+def main():
+    csvFiles = ParseArgs()
+    listOfParts = GetCNumberssFromCSV(csvFiles)
+    labels = GetPartsStrings(listOfParts)
+    CreatePDF(labels)
+
+if __name__ == "__main__":
+    main()
