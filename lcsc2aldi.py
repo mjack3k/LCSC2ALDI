@@ -180,7 +180,18 @@ def CreatePDF(parts):
         file.write("\\hline\n")
 
         for x in range(nRows):
-            file.write("\\break \\includegraphics[width=10mm]{icons/led.png} & \\break C9999 \\break LED 1206 Emerald & derp & 2\\\\[12mm]")
+            for y in range(nCols):
+
+                if y != 0:
+                    file.write(" & ")
+
+                if (len(parts) <= (x * nCols + y)):
+                    file.write("0")
+                else:
+                    file.write("\\break Symbol &" + str(parts[x*nCols + y][0].decode("utf-8")))
+
+            #file.write("\\break \\includegraphics[width=10mm]{icons/led.png} & \\break C9999 \\break LED 1206 Emerald & derp & 2\\\\[12mm]")
+            file.write("\\\\[12mm]")
             file.write("\n")
             file.write("\\hline\n")
 
@@ -216,9 +227,8 @@ def CreatePDF(parts):
 # The actual main() function
 def main():
     csvFiles = ParseArgs()
-    #listOfParts = GetCNumberssFromCSV(csvFiles)
-    #labels = GetPartsStrings(listOfParts)
-    labels = []
+    listOfParts = GetCNumberssFromCSV(csvFiles)
+    labels = GetPartsStrings(listOfParts)
     CreatePDF(labels)
 
 if __name__ == "__main__":
