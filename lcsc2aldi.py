@@ -102,14 +102,15 @@ def GetPartsStrings(listOfParts):
         #i = website.text.index('', i)
         value = website.text[i+15:].partition('"')[0].replace("ROHS","").split(" ")
         value = ' '.join(value[:4])
+        value = value.encode("utf-8")
         
         if str(categories[2].decode("utf-8")) in knownCategories:
             #print((part + " " + str(categories[2]) + " " + str(package) + " " + str(value)).encode("utf-8"), flush=True)
-            labels.append((part.encode("utf-8"), str(categories[2]).encode("utf-8"), str(package).encode("utf-8"), str(value).encode("utf-8")))
+            labels.append((part, categories[2].decode("utf-8"), package.decode("utf-8"), value.decode("utf-8")))
         else:
             #print(categories[2])
             #print((part + " " + str(categories[-1]).split(' ')[-1] + " " + str(package) + " " + str(value)).encode("utf-8"), flush=True)
-            labels.append((part.encode("utf-8"), str(categories[-1]).split(' ')[-1].encode("utf-8"), str(package).encode("utf-8"), str(value).encode("utf-8")))
+            labels.append((part, categories[-1].decode("utf-8").split(' ')[-1], package.decode("utf-8"), value.decode("utf-8")))
         
     print(len(labels))
     return labels
@@ -128,6 +129,24 @@ def GetPartsStrings(listOfParts):
 #       I had - simple gui to manage how many parts are available, and where are they located). 
 #       If no external DB should be used, then just keeping parts in local variables is fine (I guess?). 
 #       
+
+# Based on the part (category), provide the right icon (filename + path) string to be used in the PDF
+def GetIconForPart(part):
+    try:
+        partStr = part.decode("utf-8")
+    except:
+        partStr = part
+
+    iconFile = "icons/"
+
+    if partStr == "Capacitors":
+        iconFile+="capacitor.png"
+    elif partStr == "Resistors":
+        iconFile += "resistor.png"
+    else:
+        iconFile +="microchip.png"
+
+    return iconFile
 
 # # # 3. Create a PDF document with labels.
 
@@ -158,13 +177,14 @@ def CreatePDF(parts):
     
     TEXFILE="LCSC_Labels.tex"
     
-    with open(TEXFILE, "w") as file:
+    with open(TEXFILE, "w", encoding="utf-8") as file:
         # Write header
         file.write("\\documentclass{article}\n")
         file.write("\\usepackage{graphicx} % Required for inserting images\n")
         file.write("\\usepackage[thinlines]{easytable}\n")
         file.write("\\usepackage[margin=2cm]{geometry}\n")
         file.write("\\usepackage{longtable}\n")
+        #file.write("\\usepackage[utf8x]{inputenc}")
         file.write('\\title{LCSC2ALDI}\n')
         file.write("\\author{mjack3k}\n")
         file.write("\\date{March 2023}\n")
@@ -188,10 +208,23 @@ def CreatePDF(parts):
                 if (len(parts) <= (x * nCols + y)):
                     file.write("0")
                 else:
-                    file.write("\\break Symbol &" + str(parts[x*nCols + y][0].decode("utf-8")))
+                    file.write("\\break \\includegraphics[height=6mm]{" + GetIconForPart(parts[x*nCols + y][1]) + "} & ")
+                    file.write(str(parts[x*nCols + y][0]))
+                    file.write(" \\break ")
+                    file.write(str(parts[x*nCols + y][1]))
+                    file.write(" \\break ")
+                    file.write(str(parts[x * nCols + y][2]))
+                    file.write(" \\break ")
+                    #try:
+                    file.write(str(parts[x * nCols + y][3]))
+                    #except:
+                    #    pass
+
+
 
             #file.write("\\break \\includegraphics[width=10mm]{icons/led.png} & \\break C9999 \\break LED 1206 Emerald & derp & 2\\\\[12mm]")
-            file.write("\\\\[12mm]")
+            #file.write(" \\\\[12mm]")
+            file.write(" \\\\")
             file.write("\n")
             file.write("\\hline\n")
 
