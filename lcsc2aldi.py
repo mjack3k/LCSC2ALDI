@@ -194,9 +194,9 @@ def CreatePDF(parts):
 
         # Put the table HERE!
         file.write("\\begin{longtblr}\n") # begin table
-        file.write("[")
+        file.write("[\n")
         file.write("\tcaption = {https://github.com/mjack3k/LCSC2ALDI},\n")
-        file.write("]")
+        file.write("]\n")
 
         file.write("{\n")
         file.write("\thlines,\n")
