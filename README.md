@@ -10,6 +10,17 @@ small parts magazine, like the one here:
 
 
 
-The project is not ready yet - we can parse the CSV file (exported BOM from LCSC),
-and got general idea how to proceed, but it still needs some work.
-Doesn't produce any usable output (yet!).
+Usage:
+python lcsc2aldi.py [CSV FILE]
+
+You can use multiple CSV files in one go (*.csv will work too). 
+
+The script will then gather information from LCSC website and generate a PDF you can print.
+Then just cut the labels using scissors and glue on the drawers.
+
+
+*Important notice*
+This is still early version of the script. It more or less works, but the data in table
+is still not quite right (for example - resistor values are missing completely!).
+
+I am still working on it. Feel free to contribute yourself! Or provide feedback via ISSUES.
