@@ -18,6 +18,14 @@ You can use multiple CSV files in one go (*.csv will work too).
 The script will then gather information from LCSC website and generate a PDF you can print.
 Then just cut the labels using scissors and glue on the drawers.
 
+You need to have TEX (Xelatex) installed. 
+For windows:
+[https://miktex.org/](https://miktex.org/)
+
+On Linux:
+check your distribution repositories, most likely:
+`sudo apt-get install texlive-xetex`
+
 
 *Important notice*
 This is still early version of the script. It more or less works, but the data in table
