@@ -184,18 +184,33 @@ def CreatePDF(parts):
         file.write("\\usepackage[thinlines]{easytable}\n")
         file.write("\\usepackage[margin=2cm]{geometry}\n")
         file.write("\\usepackage{longtable}\n")
+        file.write("\\usepackage{tabularray}\n")
         #file.write("\\usepackage[utf8x]{inputenc}")
         file.write('\\title{LCSC2ALDI}\n')
         file.write("\\author{mjack3k}\n")
         file.write("\\date{March 2023}\n")
         file.write("\\begin{document}\n")
-        file.write("\\maketitle\n")
+        #file.write("\\maketitle\n")
 
         # Put the table HERE!
-        file.write("\\begin{longtable}{") # begin table
-        for x in range(nCols):
-            file.write("|p{20mm}p{43mm}")   # define columns
-        file.write("|}\n")
+        file.write("\\begin{longtblr}\n") # begin table
+        file.write("[")
+        file.write("\tcaption = {https://github.com/mjack3k/LCSC2ALDI},\n")
+        file.write("]")
+
+        file.write("{\n")
+        file.write("\thlines,\n")
+        file.write("\tvline{odd},\n")
+        file.write("\trows = {12mm, font =\\tiny},\n")
+        file.write("\tcolumn{odd} = {20mm},\n")
+        file.write("\tcolumn{even} = {43mm},\n")
+        file.write("\tcells = {c, m},\n")
+
+        file.write("}\n")
+
+        #for x in range(nCols):
+        #    file.write("|m{20mm}m{43mm}")   # define columns
+        #file.write("|}\n")
 
         file.write("\\hline\n")
 
@@ -208,7 +223,7 @@ def CreatePDF(parts):
                 if (len(parts) <= (x * nCols + y)):
                     file.write("0")
                 else:
-                    file.write("\\break \\includegraphics[height=6mm]{" + GetIconForPart(parts[x*nCols + y][1]) + "} & ")
+                    file.write("\\includegraphics[height=6mm]{" + GetIconForPart(parts[x*nCols + y][1]) + "} & ")
                     file.write(str(parts[x*nCols + y][0]))
                     file.write(" \\break ")
                     file.write(str(parts[x*nCols + y][1]))
@@ -224,11 +239,11 @@ def CreatePDF(parts):
 
             #file.write("\\break \\includegraphics[width=10mm]{icons/led.png} & \\break C9999 \\break LED 1206 Emerald & derp & 2\\\\[12mm]")
             #file.write(" \\\\[12mm]")
-            file.write(" \\\\")
+            #file.write(" \\\\")
             file.write("\n")
-            file.write("\\hline\n")
+            file.write("\\\\ \\hline\n")
 
-        file.write("\\end{longtable}")    # end table
+        file.write("\\end{longtblr}")    # end table
 
         # End TEX document
         file.write("\\end{document}\n")
@@ -252,7 +267,7 @@ def CreatePDF(parts):
 
 
 
-    subprocess.run(["pdflatex", TEXFILE])
+    subprocess.run(["xelatex", TEXFILE])
 
 
 
