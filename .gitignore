@@ -1,1 +1,5 @@
 *.csv
+*.aux
+*.log
+*.pdf
+*.tex
